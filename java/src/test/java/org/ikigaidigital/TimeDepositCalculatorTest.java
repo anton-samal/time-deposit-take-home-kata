@@ -1,5 +1,7 @@
 package org.ikigaidigital;
 
+import org.ikigaidigital.domain.interest.BasicInterestPolicy;
+import org.ikigaidigital.domain.interest.InterestPolicy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -93,5 +95,28 @@ class TimeDepositCalculatorTest {
         // 10000.00 + 25.00 = 10025.00, then 10025.00 * 3% / 12 = 25.0625 -> 25.06
         assertThat(deposit.getBalance()).isCloseTo(10050.06, within(TOLERANCE));
         assertThat(deposit.getDays()).isEqualTo(60);
+    }
+
+    @Test
+    void supportsNewPlanTypesThroughAdditionalPolicies() {
+        InterestPolicy gold = new InterestPolicy() {
+            @Override
+            public String planType() {
+                return "gold";
+            }
+
+            @Override
+            public double monthlyInterest(TimeDeposit deposit) {
+                return 12.5;
+            }
+        };
+        TimeDepositCalculator extendedCalculator = new TimeDepositCalculator(List.of(new BasicInterestPolicy(), gold));
+        TimeDeposit goldDeposit = new TimeDeposit(1, "gold", 100.00, 10);
+        TimeDeposit basicDeposit = new TimeDeposit(2, "basic", 10000.00, 31);
+
+        extendedCalculator.updateBalance(List.of(goldDeposit, basicDeposit));
+
+        assertThat(goldDeposit.getBalance()).isCloseTo(112.50, within(TOLERANCE));
+        assertThat(basicDeposit.getBalance()).isCloseTo(10008.33, within(TOLERANCE));
     }
 }
