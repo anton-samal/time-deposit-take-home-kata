@@ -11,7 +11,7 @@ These rules are loaded by Claude Code for every session in this repository. Work
 
 ## Architecture: hexagonal (ports & adapters)
 - Core = `org.ikigaidigital` (`TimeDeposit`, `TimeDepositCalculator`) + `org.ikigaidigital.domain..` + `org.ikigaidigital.application..`.
-- The core must not import Spring, Jakarta Persistence or anything from `adapter..` or `config..`.
+- The core must not import Spring, Jakarta, Hibernate or anything from `adapter..` or `config..` (enforced by `ArchitectureTest`).
 - Inbound adapters (`adapter.in.web`) call **in-ports** (use-case interfaces); outbound adapters (`adapter.out.persistence`) implement **out-ports**.
 - Dependencies point inward only: adapters → application → domain. Spring wiring lives in `config`.
 - JPA entities and generated OpenAPI models never leak into the core; map at the adapter boundary.
