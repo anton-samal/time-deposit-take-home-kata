@@ -1,5 +1,6 @@
 package org.ikigaidigital.application;
 
+import lombok.RequiredArgsConstructor;
 import org.ikigaidigital.TimeDeposit;
 import org.ikigaidigital.TimeDepositCalculator;
 import org.ikigaidigital.application.port.in.GetAllTimeDepositsUseCase;
@@ -14,19 +15,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /** Application service: orchestrates the use cases; the interest rules stay in the domain. */
+@RequiredArgsConstructor
 public class TimeDepositService implements UpdateAllBalancesUseCase, GetAllTimeDepositsUseCase {
 
     private final TimeDepositRepositoryPort timeDeposits;
     private final WithdrawalRepositoryPort withdrawals;
     private final TimeDepositCalculator calculator;
-
-    public TimeDepositService(TimeDepositRepositoryPort timeDeposits,
-                              WithdrawalRepositoryPort withdrawals,
-                              TimeDepositCalculator calculator) {
-        this.timeDeposits = timeDeposits;
-        this.withdrawals = withdrawals;
-        this.calculator = calculator;
-    }
 
     @Override
     public void updateAllBalances() {

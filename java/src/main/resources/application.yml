@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: time-deposit-kata
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # Flyway owns the schema; Hibernate only checks the mapping
+  flyway:
+    # db/seed adds demo data for local runs; tests use db/migration only
+    locations: classpath:db/migration,classpath:db/seed

@@ -1,11 +1,14 @@
 package org.ikigaidigital.domain.interest;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.ikigaidigital.TimeDeposit;
 
 /**
  * Template for plans that pay a fixed annual rate monthly: {@code balance * annualRate / 12}.
  * Subclasses only decide on which days a deposit is eligible.
  */
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class AnnualRateInterestPolicy implements InterestPolicy {
 
     /** No interest is applied for the first 30 days for any existing plan. */
@@ -15,11 +18,6 @@ public abstract class AnnualRateInterestPolicy implements InterestPolicy {
 
     private final String planType;
     private final double annualRate;
-
-    protected AnnualRateInterestPolicy(String planType, double annualRate) {
-        this.planType = planType;
-        this.annualRate = annualRate;
-    }
 
     @Override
     public final String planType() {

@@ -23,6 +23,12 @@ These rules are loaded by Claude Code for every session in this repository. Work
 - Contract-first API: edit `src/main/resources/openapi/*.yaml`, implement the generated interface. Never edit generated code.
 - Prefer immutability (records, `final` fields, `List.copyOf`). No magic numbers: named constants.
 - Don't over-engineer: no abstractions without a current need, no speculative features.
+- Lombok removes boilerplate wherever it fits (compile-time only, so it's allowed in the core too):
+  - constructor injection and final fields: `@RequiredArgsConstructor`;
+  - JPA entities: `@Getter`, `@NoArgsConstructor(access = PROTECTED)`, `@AllArgsConstructor`, `@Setter` only on fields that change.
+    Never `@Data`, `@EqualsAndHashCode` or `@ToString` on entities (Hibernate identity and proxies).
+  - Prefer Java records over Lombok for immutable value types.
+  - Never touch `TimeDeposit` (shared class, no breaking changes) and don't replace hand-written methods that carry logic.
 
 ## Build
 - Dependency and plugin versions live in `<properties>` in `java/pom.xml`; never hard-code a version inside a dependency.
