@@ -122,6 +122,10 @@ org.ikigaidigital
 
 - **Large data sets:** the update loads all deposits at once. Next step: process in pages or batches.
 - **`Double` in the domain** is kept because `TimeDeposit` must not change; a `Money` value object would be the long-term fix.
+- **Dependency vulnerabilities:** versions come from the Spring Boot 4.1.2 BOM (latest stable at submission). The IDE
+  flags some transitive dependencies with known CVEs; overriding managed versions was out of scope for the kata. In a
+  real project I'd run dependency scanning in CI (e.g. OWASP Dependency-Check, Dependabot or Snyk; SonarQube/BlackDuck
+  as on my current project) and upgrade or override the affected versions.
 - **Contract tests:** once the API has real consumers, I'd add consumer-driven contract tests (Spring Cloud Contract or Pact),
   so a change to the API can't silently break a client. Today the contract-first setup already catches provider-side drift
   at compile time (the controller implements the interface generated from the OpenAPI file). A cheap first step would be to
