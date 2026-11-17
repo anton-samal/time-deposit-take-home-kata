@@ -96,6 +96,13 @@ org.ikigaidigital
   so it is not idempotent. It returns `204`; the result is read with the `GET`.
 - **Money:** the database and the API use 2-decimal values (`NUMERIC(19,2)`, JSON numbers like `10008.33`); `TimeDeposit`
   keeps `Double` because it must not change. The conversion happens only in the adapters.
+- **No lost updates:** the balance update runs in one transaction and locks the rows with `SELECT … FOR UPDATE`, so a
+  second, overlapping update waits instead of overwriting the first one. Without it, two `POST`s at the same moment
+  could read the same balances and one month of interest would be lost (reproduced by `ConcurrentBalanceUpdateTest`:
+  8 parallel updates gave 1 month of interest before the fix, 8 after). The transaction is started in `config`
+  with a `TransactionTemplate`, so the core needs no `@Transactional`. Found during the final review and fixed in its own
+  commit: the change touched only one out-port method, the persistence adapter and the config; the domain and the
+  interest rules stayed untouched.
 - **The `GET` runs two queries** (deposits + withdrawals, grouped in memory) instead of one withdrawal query per deposit.
 - **Tests:** in-memory fakes instead of mocks for the service; real PostgreSQL (Testcontainers) for persistence and API tests.
 
@@ -113,10 +120,12 @@ org.ikigaidigital
 
 ## Known limitations / next steps
 
-- **Concurrent updates:** two `POST` requests at the same moment could both read the same balances, and one month of
-  interest would be lost. Fix: row locking (`SELECT … FOR UPDATE`) or an optimistic `@Version` column.
 - **Large data sets:** the update loads all deposits at once. Next step: process in pages or batches.
 - **`Double` in the domain** is kept because `TimeDeposit` must not change; a `Money` value object would be the long-term fix.
+- **Contract tests:** once the API has real consumers, I'd add consumer-driven contract tests (Spring Cloud Contract or Pact),
+  so a change to the API can't silently break a client. Today the contract-first setup already catches provider-side drift
+  at compile time (the controller implements the interface generated from the OpenAPI file). A cheap first step would be to
+  validate the end-to-end test responses against the OpenAPI schema.
 
 ## AI-assisted development
 
