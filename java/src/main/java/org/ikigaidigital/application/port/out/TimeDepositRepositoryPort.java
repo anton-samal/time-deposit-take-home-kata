@@ -10,6 +10,12 @@ public interface TimeDepositRepositoryPort {
     /** All time deposits, ordered by id. */
     List<TimeDeposit> findAll();
 
+    /**
+     * All time deposits, ordered by id, locked for update until the surrounding transaction ends,
+     * so overlapping balance updates run one after another instead of overwriting each other.
+     */
+    List<TimeDeposit> findAllForUpdate();
+
     /** Stores the current balances of the given deposits, all or nothing. */
     void saveAll(List<TimeDeposit> deposits);
 }

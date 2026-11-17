@@ -24,7 +24,8 @@ public class TimeDepositService implements UpdateAllBalancesUseCase, GetAllTimeD
 
     @Override
     public void updateAllBalances() {
-        List<TimeDeposit> deposits = timeDeposits.findAll();
+        // Must run in one transaction (see TimeDepositConfiguration): the lock is held until the new balances are saved.
+        List<TimeDeposit> deposits = timeDeposits.findAllForUpdate();
         calculator.updateBalance(deposits);
         timeDeposits.saveAll(deposits);
     }

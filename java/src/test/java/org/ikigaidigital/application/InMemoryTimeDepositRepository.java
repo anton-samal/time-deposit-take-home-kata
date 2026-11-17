@@ -27,6 +27,12 @@ class InMemoryTimeDepositRepository implements TimeDepositRepositoryPort {
                 .toList();
     }
 
+    /** No concurrency in unit tests; locking is covered by ConcurrentBalanceUpdateTest against PostgreSQL. */
+    @Override
+    public List<TimeDeposit> findAllForUpdate() {
+        return findAll();
+    }
+
     @Override
     public void saveAll(List<TimeDeposit> deposits) {
         deposits.forEach(deposit -> store.put(deposit.getId(), copy(deposit)));

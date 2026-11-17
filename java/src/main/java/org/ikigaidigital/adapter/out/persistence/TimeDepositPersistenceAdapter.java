@@ -5,6 +5,7 @@ import org.ikigaidigital.TimeDeposit;
 import org.ikigaidigital.application.port.out.TimeDepositRepositoryPort;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -29,9 +30,14 @@ class TimeDepositPersistenceAdapter implements TimeDepositRepositoryPort {
     @Override
     @Transactional(readOnly = true)
     public List<TimeDeposit> findAll() {
-        return repository.findAll(Sort.by("id")).stream()
-                .map(entity -> new TimeDeposit(entity.getId(), entity.getPlanType(), entity.getBalance().doubleValue(), entity.getDays()))
-                .toList();
+        return toDomain(repository.findAll(Sort.by("id")));
+    }
+
+    /** MANDATORY: a row lock outside a transaction would be released immediately, so fail fast instead. */
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public List<TimeDeposit> findAllForUpdate() {
+        return toDomain(repository.findAllForUpdate());
     }
 
     @Override
@@ -43,6 +49,12 @@ class TimeDepositPersistenceAdapter implements TimeDepositRepositoryPort {
         // Only the balance changes; the managed entities are flushed on commit.
         repository.findAllById(depositsById.keySet())
                 .forEach(entity -> entity.setBalance(toMoney(depositsById.get(entity.getId()).getBalance())));
+    }
+
+    private static List<TimeDeposit> toDomain(List<TimeDepositEntity> entities) {
+        return entities.stream()
+                .map(entity -> new TimeDeposit(entity.getId(), entity.getPlanType(), entity.getBalance().doubleValue(), entity.getDays()))
+                .toList();
     }
 
     /** {@code BigDecimal.valueOf} uses the shortest decimal form of the double (e.g. 10008.33, not 10008.3299999...). */
